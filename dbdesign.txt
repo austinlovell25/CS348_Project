@@ -1,0 +1,9 @@
+Game(PK ID, Name, Release Date, Genre, Price, FK Publisher.ID)
+
+User(PK ID, Username, Join Date)
+
+Review(PK ID, FK Users.ID, FK Games.ID, Rating, Date)
+
+Wishlist(PK ID, FK Users.ID, FK Games.ID, Add Date)
+
+Publisher(PK ID, Name, Creation Date, FK Game.ID)

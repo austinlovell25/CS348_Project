@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Review Dashboard</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        tr:hover { background-color: #f5f5f5; }
+        .epic-button {
+    display: inline-block;
+    padding: 15px 30px;
+    background-color: darkorchid;
+    color: white;
+    font-size: 1.5em;
+    text-decoration: none;
+    border-radius: 50px; /* Rounded edges for a more epic look */
+    box-shadow: 0 4px 20px rgba(128, 0, 128, 0.6); /* Shadow for depth */
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+}
+
+.epic-button:before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300%;
+    height: 300%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transition: transform 0.5s;
+    z-index: 0;
+    transform: translate(-50%, -50%) scale(0);
+}
+
+.epic-button:hover {
+    background-color: #9932cc; /* Darker shade on hover */
+    transform: scale(1.05);
+    box-shadow: 0 8px 30px rgba(128, 0, 128, 0.8); /* Deeper shadow on hover */
+}
+
+.epic-button:hover:before {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+    </style>
+</head>
+<body>
+    <h2>Review Dashboard</h2>
+    <!-- Link to Home Page -->
+    <div>
+        <a href="{% url 'gamelogs:index' %}">Home</a>
+    </div>
+
+
+
+       <!-- Links to Add Review page -->
+    <div> <!-- Adjusted margins -->
+        <h2>Manage Reviews</h2>
+        <a href="{% url 'gamelogs:add_review' %}" class="epic-button">Add New Review</a>
+    </div>
+
+     <!-- Filter Reviews by User -->
+    <h3>Filter Reviews by User</h3>
+    <form method="get" action="">
+        <label for="user_id">Select User:</label>
+        <select id="user_id" name="user_id" required>
+            <option value="">Choose a user...</option>
+            <option value="all">All Users</option> <!-- Option for all users -->
+            {% for user in users %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Filter Reviews</button>
+    </form>
+
+    <!-- Table for reviews -->
+    <h3>Recent Reviews</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Game</th>
+                <th>User</th>
+                <th>Rating</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for review in filtered_reviews %}
+                <tr>
+                    <td>{{ review.game }}</td>
+                    <td>{{ review.user }}</td>
+                    <td>{{ review.rating }}</td>
+                    <td>{{ review.date }}</td>
+                    <td>
+                        <a href="{% url 'gamelogs:update_review' review.id %}">Edit</a> |
+                        <a href="{% url 'gamelogs:delete_review' review.id %}">Delete</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="20">No reviews available.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Show average review score for the selected game -->
+    {% if average_score %}
+        <h3>Average Review Score for {{ selected_game.name }}: {{ average_score }}</h3>
+    {% endif %}
+
+</body>
+</html>
