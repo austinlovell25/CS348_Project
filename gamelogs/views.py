@@ -4,8 +4,6 @@ from django.http import HttpResponse
 from .forms import UserForm, ReviewForm
 from .models import Publisher, Game, Review, User, Wishlist
 
-# views.py
-
 from django.shortcuts import render
 from .models import Review, Game, User
 
