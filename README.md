@@ -1,1 +1,1 @@
-Gamelogs project. Written in Django and Python. Run using python .\manage.py runserver
+Gamelogs project. Written in Django and Python. Run using python manage.py runserver
