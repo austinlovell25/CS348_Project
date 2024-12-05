@@ -13,9 +13,28 @@ def select_dashboard(request):
     avg_rating = None
     game_name = ''
     games = Game.objects.all()  # Retrieve all games for the dropdown
+    publishers = Publisher.objects.all()  # Retrieve all publishers for the dropdown
+    users = User.objects.all()  # Retrieve all users for the dropdown
+    sort_option = "date_dsc"
 
     if request.method == 'POST':
         game_id = request.POST.get('game_id') or request.POST.get('game_select')
+        publisher_id = request.POST.get('publisher_select')
+        user_id = request.POST.get('user_select')
+        sort_option = request.POST.get('sort_option')
+        print(f"\n\nsort_option: {sort_option}")
+
+        if sort_option == "date_asc":
+            order_cls = "ORDER BY r.date;"
+        elif sort_option == "date_dsc":
+            order_cls = "ORDER BY r.date DESC;"
+        elif sort_option == "rating_asc":
+            order_cls = "ORDER BY r.rating;"
+        elif sort_option == "rating_dsc":
+            order_cls = "ORDER BY r.rating DESC;"
+        else:
+            order_cls = "ORDER BY r.date DESC;"
+
 
         # Use game_id to fetch reviews if provided
         if game_id:
@@ -25,8 +44,9 @@ def select_dashboard(request):
                 FROM gamelogs_review r
                 JOIN gamelogs_user u ON r.user_id = u.id
                 WHERE r.game_id = %s
-                ORDER BY r.date DESC;
+                
             """
+            query += order_cls
             game_reviews = Review.objects.raw(query, [game_id])
 
             query = """
@@ -48,12 +68,78 @@ def select_dashboard(request):
             if avg_rating:
                 avg_rating = round(avg_rating, 2)
 
+        elif publisher_id:
+            # Fetch reviews for games by the specified publisher
+            query = """
+                       SELECT r.id, r.rating, r.date, u.username AS reviewer
+                       FROM gamelogs_review r
+                       JOIN gamelogs_user u ON r.user_id = u.id
+                       JOIN gamelogs_game g ON r.game_id = g.id
+                       WHERE g.publisher_id = %s
+                       
+                   """
+            query += order_cls
+            game_reviews = Review.objects.raw(query, [publisher_id])
+
+            query = """
+                SELECT p.id, p.name
+                FROM gamelogs_publisher p
+                WHERE p.id = %s;
+            """
+            game_name = Review.objects.raw(query, [publisher_id])
+            game_name = game_name[0].name
+
+            # SQL query to fetch the average rating for the specified publisher
+            avg_rating_query = """
+                            SELECT r.id, AVG(r.rating) AS avg_rating
+                            FROM gamelogs_review r
+                            JOIN gamelogs_game g ON r.game_id = g.id
+                            JOIN gamelogs_publisher p ON g.publisher_id = p.id
+                            WHERE p.id = %s;
+                        """
+            avg_rating_result = Review.objects.raw(avg_rating_query, [publisher_id])
+            avg_rating = avg_rating_result[0].avg_rating if avg_rating_result else None
+            if avg_rating:
+                avg_rating = round(avg_rating, 2)
+
+        elif user_id:
+            # Fetch reviews by the specified user
+            query = """
+                       SELECT r.id, r.rating, r.date, g.name AS game_name
+                       FROM gamelogs_review r
+                       JOIN gamelogs_game g ON r.game_id = g.id
+                       WHERE r.user_id = %s
+                       
+                   """
+            query += order_cls
+            game_reviews = Review.objects.raw(query, [user_id])
+
+            query = """
+                SELECT u.id, u.username
+                FROM gamelogs_user u
+                WHERE u.id = %s;
+            """
+            game_name = Review.objects.raw(query, [user_id])
+            game_name = game_name[0].username
+
+            # SQL query to fetch the average rating for the specified user
+            avg_rating_query = """
+                SELECT r.id, AVG(r.rating) AS avg_rating
+                FROM gamelogs_review r
+                WHERE r.user_id = %s;
+            """
+            avg_rating_result = Review.objects.raw(avg_rating_query, [user_id])
+            avg_rating = avg_rating_result[0].avg_rating if avg_rating_result else None
+            if avg_rating:
+                avg_rating = round(avg_rating, 2)
 
     return render(request, 'gamelogs/select_dashboard.html', {
         'game_reviews': game_reviews,
         'game_name': game_name,
         'avg_rating': avg_rating,
-        'games': games  # Pass the list of games to the template
+        'games': games,  # Pass the list of games to the template,
+        'publishers': publishers,
+        'users': users,
     })
 
 def review_dashboard(request):

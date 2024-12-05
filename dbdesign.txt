@@ -1,13 +1,9 @@
 
-
-
 Game(PK ID, CHAR Name, DATE Release Date, ENUM Genre, REAL Price, FK Publisher.ID)
 
 User(PK ID, CHAR Username, DATE Join Date)
 
 Review(PK ID, FK Users.ID, FK Games.ID, INT Rating, DATE Date)
-
-Wishlist(PK ID, FK Users.ID, FK Games.ID, DATE Add Date)
 
 Publisher(PK ID, CHAR Name, DATE Creation Date)
 
